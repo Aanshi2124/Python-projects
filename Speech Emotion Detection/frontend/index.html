@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Speech Emotion Detection</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+      }
+
+      .container {
+        text-align: center;
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      input[type="file"] {
+        margin: 20px 0;
+      }
+
+      button {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      .result {
+        margin-top: 20px;
+        font-size: 18px;
+        color: #333;
+      }
+
+      .error {
+        color: #ff0000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Speech Emotion Detection</h1>
+      <input type="file" id="audioFile" accept="audio/*" />
+      <button onclick="uploadAudio()">Predict Emotion</button>
+      <div class="result" id="result"></div>
+    </div>
+
+    <script>
+      async function uploadAudio() {
+        const fileInput = document.getElementById("audioFile");
+        const resultDiv = document.getElementById("result");
+        resultDiv.textContent = ""; // Clear previous result
+
+        if (!fileInput.files[0]) {
+          resultDiv.textContent = "Please upload an audio file.";
+          resultDiv.className = "result error";
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        try {
+          resultDiv.textContent = "Processing...";
+          const response = await fetch("http://127.0.0.1:5000/predict", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Failed to process the audio file.");
+          }
+
+          const data = await response.json();
+          resultDiv.textContent = `Detected Emotion: ${data.emotion}`;
+          resultDiv.className = "result";
+        } catch (error) {
+          resultDiv.textContent = error.message;
+          resultDiv.className = "result error";
+        }
+      }
+    </script>
+  </body>
+</html>
